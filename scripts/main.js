@@ -88,30 +88,31 @@ var Main = (function() {
         }
     }
 
-    function drawCharacter() {
+  function drawCharacter() {
+
         if (up) { // w - up
-            player.y -= 2;
+            if (!doesCollide(player.x, player.y - 2, Bar.getCollidableMatrices())) player.y -= 2; //make sure player doesn't collide
             if (player.y <= 0) player.y = 0;
             direction = 'up';
             animateCharacter();
         }
 
         if (right) { // d - right
-            player.x += 2;
+            if (!doesCollide(player.x + 2, player.y, Bar.getCollidableMatrices())) player.x += 2; //make sure player doesn't collide
             if (player.x + player.width >= width) player.x = width - player.width;
             direction = 'right';
             animateCharacter();
         }
 
         if (left) { // a - left
-            player.x -= 2;
+            if (!doesCollide(player.x - 2, player.y, Bar.getCollidableMatrices()))  player.x -= 2;
             if (player.x <= 0) player.x = 0;
             direction = 'left';
             animateCharacter();
         }
 
         if (down) { // s - down
-            player.y += 2;
+            if (!doesCollide(player.x, player.y + 2, Bar.getCollidableMatrices())) player.y += 2;
             if (player.y + player.height >= height) player.y = height - player.height;
             direction = 'down';
             animateCharacter();
@@ -119,6 +120,18 @@ var Main = (function() {
 
         player.draw(ctx, sprite_map[direction][sprite_index][0], sprite_map[direction][sprite_index][1]);
         // ctx.drawImage(player.image, sprite_map[direction][sprite_index][0], sprite_map[direction][sprite_index][1], 32, 48, player.x, player.y, 32, 48);
+    }
+    
+    function doesCollide(x, y, collidableObjectsMatrices){
+      var xCol = Math.round(x / 32); //32 should be set to tile.width
+      var yRow = Math.ceil(y / 32); //32 should be set to tile.height
+      
+      for (var ct = 0; ct < collidableObjectsMatrices.length; ct++)
+      {
+        if (collidableObjectsMatrices[ct][yRow].length > xCol && collidableObjectsMatrices[ct][yRow][xCol] != 3) 
+          return true;
+      }
+      return false;
     }
 
     function animateCharacter() {

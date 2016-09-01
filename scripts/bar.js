@@ -124,6 +124,9 @@ var Bar = (function () {
     }
 
     return {
+         getCollidableMatrices : function() {
+            return [collidable_objects_layer1, collidable_objects_layer2];
+        },
         init: init
     }
 })();
