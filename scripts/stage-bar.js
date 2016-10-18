@@ -12,7 +12,10 @@ var Bar = (function () {
         bg_canvas,
         bg_ctx,
         main_canvas,
-        main_ctx;
+        main_ctx,
+        music = Sounds.music.dreamscape,
+        width = 608,
+        height = 320;
 
     var floor = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -27,8 +30,7 @@ var Bar = (function () {
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     ];
 
-    // everything in this array is "collidable"
-    var collidable_objects_layer1 = [
+    var tile_layer1 = [
         [16, 17, 17, 17, 17, 17, 17, 17, 17, 17, 16, 17, 17, 17, 17, 17, 17, 17, 17],
         [24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 24, 25, 25, 25, 25, 25, 25, 25, 25],
         [3, 3, 3, 34],
@@ -41,7 +43,7 @@ var Bar = (function () {
         []
     ];
 
-    var collidable_objects_layer2 = [
+    var tile_layer2 = [
         [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
         [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
         [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
@@ -54,7 +56,7 @@ var Bar = (function () {
         [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
     ];
 
-    var decorations_layer1 = [
+    var tile_layer3 = [
         [3, 3, 7, 3, 3, 110, 3, 3, 7, 3, 3, 7, 3, 3, 110, 3, 3, 7, 3],
         [3, 3, 15, 3, 3, 3, 3, 3, 15, 3, 3, 15, 3, 3, 3, 3, 3, 15, 3],
         [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
@@ -64,18 +66,38 @@ var Bar = (function () {
         [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
         [3, 3, 3, 3, 80, 80, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
         [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-        [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+        [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 23]
+    ];
+
+    var collisions = [
+        [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+        [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+        [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 2, 2, 0, 0, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
+        [0, 0, 2, 2, 0, 0, 2, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3]
     ];
 
     function init() {
+        Game.setGameLoading(true);
         bg_canvas = document.getElementById('bg');
         bg_ctx = bg_canvas.getContext('2d');
 
         main_canvas = document.getElementById('main');
-        main_ctx = bg_canvas.getContext('2d');
+
+        bg_canvas.width = width;
+        bg_canvas.height = height;
+
+        main_canvas.width = width;
+        main_canvas.height = height;
 
         loadBar('assets/cafe.png', function () {
             draw();
+            Game.setGameLoading(false);
         });
     }
 
@@ -95,27 +117,27 @@ var Bar = (function () {
 
                 bg_ctx.drawImage(tile_set_image, (tile_col * bar_tile_size), (tile_row * bar_tile_size), bar_tile_size, bar_tile_size, (c * bar_tile_size), (r * bar_tile_size), bar_tile_size, bar_tile_size);
 
-                // draw layer 1 of collidable objects
-                tile = collidable_objects_layer1[r][c];
+                // draw layer 1 tables and shit
+                tile = tile_layer1[r][c];
                 tile_row = (tile / bar_tiles_per_row) | 0;
                 tile_col = (tile % bar_tiles_per_row) | 0;
 
-                main_ctx.drawImage(tile_set_image, (tile_col * bar_tile_size), (tile_row * bar_tile_size), bar_tile_size, bar_tile_size, (c * bar_tile_size), (r * bar_tile_size), bar_tile_size, bar_tile_size);
+                bg_ctx.drawImage(tile_set_image, (tile_col * bar_tile_size), (tile_row * bar_tile_size), bar_tile_size, bar_tile_size, (c * bar_tile_size), (r * bar_tile_size), bar_tile_size, bar_tile_size);
 
-                // draw layer 2 of collidable objects
-                tile = collidable_objects_layer2[r][c];
+                // draw layer 2 tables and shit
+                tile = tile_layer2[r][c];
                 tile_row = (tile / bar_tiles_per_row) | 0;
                 tile_col = (tile % bar_tiles_per_row) | 0;
 
-                main_ctx.drawImage(tile_set_image, (tile_col * bar_tile_size), (tile_row * bar_tile_size), bar_tile_size, bar_tile_size, (c * bar_tile_size), (r * bar_tile_size), bar_tile_size, bar_tile_size);
+                bg_ctx.drawImage(tile_set_image, (tile_col * bar_tile_size), (tile_row * bar_tile_size), bar_tile_size, bar_tile_size, (c * bar_tile_size), (r * bar_tile_size), bar_tile_size, bar_tile_size);
 
-                // draw layer 1 of decorations ( bread and shit )
-                tile = decorations_layer1[r][c];
+                // draw layer 3( bread and shit )
+                tile = tile_layer3[r][c];
                 tile_row = (tile / bar_tiles_per_row) | 0;
                 tile_col = (tile % bar_tiles_per_row) | 0;
 
-                console.log(tile, tile_row, tile_col)
-                console.log((tile_col * bar_tile_size), (tile_row * bar_tile_size), bar_tile_size, bar_tile_size, (c * bar_tile_size), (r * bar_tile_size), bar_tile_size, bar_tile_size);
+                // console.log(tile, tile_row, tile_col)
+                // console.log((tile_col * bar_tile_size), (tile_row * bar_tile_size), bar_tile_size, bar_tile_size, (c * bar_tile_size), (r * bar_tile_size), bar_tile_size, bar_tile_size);
 
                 bg_ctx.drawImage(tile_set_image, (tile_col * bar_tile_size), (tile_row * bar_tile_size), bar_tile_size, bar_tile_size, (c * bar_tile_size), (r * bar_tile_size), bar_tile_size, bar_tile_size);
 
@@ -124,11 +146,12 @@ var Bar = (function () {
     }
 
     return {
-         getCollidableMatrices : function() {
-            return [collidable_objects_layer1, collidable_objects_layer2];
+        getCollisions: function () {
+            return collisions;
         },
-        init: init
+        init: init,
+        height: height,
+        width: width,
+        music: music
     }
 })();
-
-Bar.init();
